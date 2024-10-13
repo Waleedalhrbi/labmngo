@@ -1,83 +1,38 @@
-import express from 'express'
+import express from 'express';
 import mongoose from 'mongoose';
-import Book from './models/book.js';
 import dotenv from 'dotenv';
+import userRouter from './routes/userRouter.js';   
+import bookRouter from './routes/bookRouter.js';   
 
-const app = express()
-app.use(express.json()) 
-dotenv.config();
+dotenv.config();   
+
+const app = express();
+app.use(express.json());  
 
  
-const port = 9000
-main().catch(err => console.log(err));
-
+const port = process.env.PORT || 3000;
 async function main() {
-  await mongoose.connect(process.env.MONGO_URI);
-  console.log('Connection successful');
+  try {
+    await mongoose.connect(process.env.MONGO_URI, {
+    });
+    console.log('Connection to MongoDB successful');
+  } catch (err) {
+    console.error('Failed to connect to MongoDB', err);
+  }
 }
+main();
 
  
-app.get('/books', (req, res) => {
-    Book.find()
-    .then(result => {
-        res.send(result);
-    })
-})
+app.use('/api/users', userRouter);   
+app.use('/api/books', bookRouter);  
 
  
-app.post('/books', (req, res) => {
-    const newBook = new Book({
-        title: req.body.title,
-        author: req.body.author,
-        editionNumber: req.body.editionNumber,
-        publishDate: req.body.publishDate,
-        hasEbook: req.body.hasEbook,
-        price: req.body.price,
-        supportedLanguages: req.body.supportedLanguages,
-        category: req.body.category
-    });
-
-    newBook.save()
-    .then(result => {
-        res.send(result);
-    })
-})
-
- 
-app.patch('/update/:id', (req, res) => {
-    const { id } = req.params;
-    Book.findByIdAndUpdate(id, req.body, { new: true, runValidators: true })
-    .then(result => {
-        res.send(result);
-    })
-})
-
- 
-app.delete('/delete/:id', (req, res) => {
-    const { id } = req.params;
-    
-    Book.deleteOne({ _id: id })
-    .then(result => {
-        if (result.deletedCount === 0) {
-            return res.status(404).send('Book not found');
-        }
-        res.send('Deleted successfully');
-    });
-})
-
- 
-app.get('/book/:id', (req, res) => {
-    const { id } = req.params;
-    
-    Book.findById(id)
-    .then(result => {
-        if (!result) {
-            return res.status(404).send('Book not found');
-        }
-        res.send(result);
-    })
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send({ message: 'Something went wrong!' });
 });
 
+ 
 app.listen(port, () => {
-    console.log(`Server listening on port ${port}`)
+  console.log(`Server listening on port ${port}`);
 });

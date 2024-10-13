@@ -1,14 +1,14 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
 const { Schema } = mongoose;
 
- 
 const bookSchema = new Schema({
     title: {
         type: String,
         required: true
     },
     author: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,  
+        ref: 'User',  
         required: true
     },
     editionNumber: {
@@ -28,7 +28,7 @@ const bookSchema = new Schema({
         required: true
     },
     supportedLanguages: {
-        type: [String],  
+        type: [String],
         required: true
     },
     category: {
@@ -39,7 +39,6 @@ const bookSchema = new Schema({
 { timestamps: true }
 );
 
- 
 const Book = mongoose.model('Book', bookSchema);
 
 export default Book;
